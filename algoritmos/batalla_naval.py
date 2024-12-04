@@ -2,22 +2,31 @@ import sys
 
 def resolver(tablero, barcos, restricciones_filas, restricciones_columnas, cantidad_espacio_ocupado, demanda_total, demanda_de_barcos, numero_barco, lista_tableros, demanda_cumplida, cant_barcos, barcos_restantes, cant_pasados):
     if encontre_una_solucion(tablero, demanda_de_barcos, demanda_total):
+        demanda_cumplida = contar_espacio_ocupado(tablero)
+        print("Demanda cumplida: ", demanda_cumplida)
         return tablero
     lista_tableros.append([tablero, demanda_cumplida])
-
+    #validacion = True if cant_pasados > 0 and 
     for barco in barcos_restantes:
-        if cant_barcos >= numero_barco:
+        if cant_barcos >= numero_barco and  cant_pasados > 0 and cant_pasados >= numero_barco:
+            print("cant_barcos: ", cant_barcos, "numero_barco: ", numero_barco, " barcos_restantes: ", barcos_restantes )
             barco_colocado = False
             i = 0
             posiciones = posiciones_posibles(tablero, barco, numero_barco)
             while i < len(posiciones) and not barco_colocado:
                 posicion = posiciones[i]
                 if puedo_poner(tablero, barco, posicion, restricciones_filas, restricciones_columnas):
+                    print("ESTOY EN 1er IF :D")
                     colocar_barco(tablero, barco, posicion, numero_barco)
                     barco_colocado = True
                     imprimir_matriz(tablero)
-                    barcos_restantes = barcos_restantes[:numero_barco-1] + barcos_restantes[numero_barco:] if len(barcos_restantes) > 1 else []
-                    solucion = resolver(tablero, barcos, restricciones_filas, restricciones_columnas, cantidad_espacio_ocupado, demanda_total, demanda_de_barcos, numero_barco + 1, lista_tableros, demanda_cumplida + (barco * 2), cant_barcos, barcos_restantes, cant_pasados)
+                    #print("barcos_restantes[:numero_barco-1] = ", barcos_restantes[:numero_barco-1], " + barcos_restantes[numero_barco:] = ", barcos_restantes[numero_barco:])
+                    barcos_restantes = barcos[numero_barco:] #if len(barcos_restantes) > 1 else []
+                    for i in range(cant_pasados):
+                        barcos_restantes.append(barcos[i]) if cant_pasados < len(barcos) and cant_pasados > 0 else print("fuera de rango")
+                    numero_barco = (numero_barco + 1) if (numero_barco + 1) <= cant_barcos else 1
+                    print("COMPROBACION cant_barcos: ", cant_barcos, "numero_barco: ", numero_barco, " barcos_restantes: ", barcos_restantes )
+                    solucion = resolver(tablero, barcos, restricciones_filas, restricciones_columnas, cantidad_espacio_ocupado, demanda_total, demanda_de_barcos, numero_barco , lista_tableros, demanda_cumplida + (barco * 2), cant_barcos, barcos_restantes, cant_pasados)
                     if solucion:
                         return solucion
                     quitar_barco(tablero, barco, posicion)
@@ -26,24 +35,47 @@ def resolver(tablero, barcos, restricciones_filas, restricciones_columnas, canti
                 i += 1
             numero_barco += 1
         else:
+            print("ENTRE AL 1 ELSE")
             cant_pasados += 1
             barcos_restantes = barcos[cant_pasados:]
+            for i in range(cant_pasados):
+                barcos_restantes.append(barcos[i]) if cant_pasados < len(barcos) else print("fuera de rango")
+            '''barcos_restantes = barcos[cant_pasados:] + [barcos[cant_pasados]]'''
             tablero = [[0] * len(tablero[0]) for _ in range(len(tablero))]
             cantidad_espacio_ocupado = 0
-            numero_barco = 2
+            numero_barco = cant_pasados + 1 #if cant_pasados != cant_barcos else 1 
+            print("Empieza con numero_barco = ", numero_barco)
             cant_barcos = len(barcos_restantes)
             demanda_cumplida = 0
-            resolver(tablero, barcos, restricciones_filas, restricciones_columnas, cantidad_espacio_ocupado, demanda_total, demanda_de_barcos, numero_barco, lista_tableros, demanda_cumplida, cant_barcos, barcos_restantes, cant_pasados)
-    
-    demanda_cumplida = 0
-    tablero_respuesta = tablero
-    for table in lista_tableros:
-        if table[1] > demanda_cumplida:
-            demanda_cumplida = table[1]
-            tablero_respuesta = table[0]
-    
-    print("Demanda cumplida: ", demanda_cumplida)
-    return tablero_respuesta
+            return resolver(tablero, barcos, restricciones_filas, restricciones_columnas, cantidad_espacio_ocupado, demanda_total, demanda_de_barcos, numero_barco, lista_tableros, demanda_cumplida, cant_barcos, barcos_restantes, cant_pasados)
+    if cant_pasados == len(barcos):
+        print("ENTRE AL IF cant_pasados != 0 : ", cant_pasados)
+        demanda_cumplida = 0
+        tablero_respuesta = tablero
+        for table in lista_tableros:
+            if table[1] > demanda_cumplida:
+                demanda_cumplida = table[1]
+                tablero_respuesta = table[0]
+        
+        print("Demanda cumplida: ", demanda_cumplida)
+        print("tablero RESPUESTA = ")
+        imprimir_matriz(tablero_respuesta)
+        return tablero_respuesta
+    else:
+        print("ENTRE AL 2 ELSE")
+        cant_pasados += 1
+        barcos_restantes = barcos[cant_pasados:]
+        for i in range(cant_pasados):
+            barcos_restantes.append(barcos[i]) if cant_pasados < len(barcos) else print("fuera de rango")
+        '''barcos_restantes = barcos[cant_pasados:] + [barcos[cant_pasados]]'''
+        tablero = [[0] * len(tablero[0]) for _ in range(len(tablero))]
+        cantidad_espacio_ocupado = 0
+        cant_barcos = len(barcos_restantes)
+        numero_barco = cant_pasados + 1#if cant_pasados != cant_barcos else 1 
+        print("Empieza con numero_barco = ", numero_barco)
+        demanda_cumplida = 0
+        return resolver(tablero, barcos, restricciones_filas, restricciones_columnas, cantidad_espacio_ocupado, demanda_total, demanda_de_barcos, numero_barco, lista_tableros, demanda_cumplida, cant_barcos, barcos_restantes, cant_pasados)
+
 
 
 def contar_espacio_ocupado(tablero):
@@ -88,12 +120,12 @@ def puedo_poner(tablero, barco, posicion, restricciones_filas, restricciones_col
         fila = casilla[0]
         columna = casilla[1]
         suma_fila = 0 
-        for i in range(len(tablero)-1):
-            if tablero[fila][i] != 0:
+        for i in range(len(tablero[0])-1):
+            if tablero[fila][i] != None and tablero[fila][i] != 0:
                 suma_fila += 1
 
         suma_columna = 0
-        for i in range(len(tablero[0])-1):
+        for i in range(len(tablero)-1):
             if tablero[i][columna] != 0:
                 suma_columna += 1
 
@@ -160,7 +192,7 @@ def leer_archivo(ruta_archivo):
         seccion = 0  
         demanda_filas = []
         demanda_columnas = []
-        barcos = []
+        barcos_archivo = []
         next(archivo)
         next(archivo)
         for linea in archivo:
@@ -173,10 +205,12 @@ def leer_archivo(ruta_archivo):
             elif seccion == 1:
                 demanda_columnas.append(int(linea))
             elif seccion == 2:
-                barcos.append(int(linea))
+                barcos_archivo.append(int(linea))
     
     n = len(demanda_filas)
     m = len(demanda_columnas)
+    barcos = sorted(barcos_archivo, reverse=True)
+
     return n, m, barcos, demanda_filas, demanda_columnas
 
 def imprimir_matriz(matriz):
@@ -193,7 +227,7 @@ def sumar_demandas(lista_demanda):
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Para ejecutar el programa por favor usar el siguiente comando: \n"
-              "python3 juego_de_hermanos_greedy.py <ruta_relativa_al_archivo>")
+              "python3 batalla_naval.py <ruta_relativa_al_archivo>")
     else:
         archivo_ruta = sys.argv[1]
         n, m, barcos, demanda_filas, demanda_columnas = leer_archivo(archivo_ruta)
