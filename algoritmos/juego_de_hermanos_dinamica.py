@@ -244,7 +244,7 @@ def juegos_de_hermanos(monedas:list) -> 0:
     if nodo_max.peso is None:
         jugadas.append(["Sophia debe agarrar la ultima ->", nodo_max.valor])
         nodo_max = nodo_max.padre
-    while nodo_max.padre is not None:
+    while nodo_max.padre != None:
         jugadas.append([nodo_max.peso[0] + " ->", nodo_max.peso[1]])
         if nodo_max.padre.hijo_izq == nodo_max:
             jugadas.append(["Sophia debe agarrar la primera ->", nodo_max.valor])
